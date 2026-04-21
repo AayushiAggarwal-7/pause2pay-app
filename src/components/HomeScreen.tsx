@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useState as useStateReact, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, ScanSearch, ShieldCheck, Swords, Search, SearchCheck } from "lucide-react";
 import RiskGauge from "@/components/RiskGauge";
@@ -24,7 +23,7 @@ const item = {
 
 const HomeScreen = () => {
   const [tab, setTab] = useState<Tab>("home");
-  const [userName, setUserName] = useStateReact("there");
+  const [userName, setUserName] = useState("there");
 
   useEffect(() => {
     const fetchProfile = async () => {
