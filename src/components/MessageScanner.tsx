@@ -2,6 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShieldAlert, Sparkles, AlertTriangle, Ban, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MessageScannerProps {
   onBack: () => void;
@@ -15,16 +17,43 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
   const [message, setMessage] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [countdown, setCountdown] = useState(5);
-  const riskScore = 89;
+  const [riskScore, setRiskScore] = useState(0);
+  const [threatType, setThreatType] = useState("");
+  const { toast } = useToast();
 
-  const handleAnalyze = () => {
+  const INDIAN_CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Lucknow", "Chandigarh", "Kochi", "Indore", "Bhopal", "Nagpur"];
+
+  const handleAnalyze = async () => {
     if (!message.trim()) return;
     setPhase("analyzing");
-    setTimeout(() => {
+
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-message", {
+        body: { message: message.trim() },
+      });
+
+      if (error) throw error;
+
+      const score = data.risk_score ?? 50;
+      const threat = data.threat_type ?? "Unknown";
+      setRiskScore(score);
+      setThreatType(threat);
+
       // Haptic: short pulse on scan complete
       if (navigator.vibrate) navigator.vibrate(50);
 
-      if (riskScore > 70) {
+      // Insert into threat_events
+      const { data: { user } } = await supabase.auth.getUser();
+      const city = INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)];
+      await supabase.from("threat_events").insert({
+        user_id: user?.id,
+        risk_score: score,
+        threat_type: threat,
+        city,
+        message_text: message.trim(),
+      } as any);
+
+      if (score > 70) {
         // Haptic: long double-pulse for high risk
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         setCountdown(5);
@@ -39,7 +68,11 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
       } else {
         setPhase("report");
       }
-    }, 3000);
+    } catch (e: any) {
+      console.error("Analysis error:", e);
+      toast({ title: "Analysis failed", description: e.message || "Please try again.", variant: "destructive" });
+      setPhase("idle");
+    }
   };
 
   const handleDismissWarning = () => {
@@ -144,20 +177,21 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
                     Risk Score
                   </p>
                   <p className="mt-1 text-5xl font-semibold text-destructive leading-none">
-                    89<span className="text-2xl">%</span>
+                    {riskScore}<span className="text-2xl">%</span>
                   </p>
                 </div>
-                <span className="px-3 py-1.5 rounded-full text-xs font-semibold text-destructive-foreground" style={{ background: "hsl(0 75% 55%)" }}>
-                  High Risk
+                <span className="px-3 py-1.5 rounded-full text-xs font-semibold text-destructive-foreground" style={{ background: riskScore > 70 ? "hsl(0 75% 55%)" : riskScore > 40 ? "hsl(45 90% 50%)" : "hsl(153 40% 50%)" }}>
+                  {riskScore > 70 ? "High Risk" : riskScore > 40 ? "Medium Risk" : "Low Risk"}
                 </span>
               </div>
 
               <div className="mt-4 h-2 w-full rounded-full bg-muted overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: "89%" }}
+                  animate={{ width: `${riskScore}%` }}
                   transition={{ duration: 0.9, ease: "easeOut" }}
-                  className="h-full rounded-full bg-destructive"
+                  className="h-full rounded-full"
+                  style={{ background: riskScore > 70 ? "hsl(0 75% 55%)" : riskScore > 40 ? "hsl(45 90% 50%)" : "hsl(153 40% 50%)" }}
                 />
               </div>
 
@@ -168,7 +202,7 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
                     Threat Type
                   </p>
                   <p className="mt-0.5 font-semibold text-foreground">
-                    Urgency / Social Engineering
+                    {threatType || "Unknown"}
                   </p>
                 </div>
               </div>
@@ -180,8 +214,11 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
                     Recommendation
                   </p>
                   <p className="mt-1 text-sm text-foreground leading-relaxed">
-                    Do <span className="font-semibold">NOT</span> click any links. This message
-                    uses fear-based tactics common in UPI scams.
+                    {riskScore > 70
+                      ? <>Do <span className="font-semibold">NOT</span> click any links. This message uses fear-based tactics common in UPI scams.</>
+                      : riskScore > 40
+                      ? "Exercise caution. Verify the sender before taking any action."
+                      : "This message appears relatively safe, but always stay vigilant."}
                   </p>
                 </div>
               </div>

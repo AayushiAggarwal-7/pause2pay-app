@@ -1,34 +1,22 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Radio, Zap, Wallet, Briefcase } from "lucide-react";
+import { ArrowLeft, Radio, Zap, Wallet, Briefcase, Phone, TrendingUp } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TrendsPageProps {
   onBack: () => void;
 }
 
-const trends = [
-  {
-    icon: Zap,
-    title: "New Electricity Bill Scam",
-    detail:
-      "Scammers are sending fake disconnection notices via WhatsApp.",
-    time: "2 hours ago",
-  },
-  {
-    icon: Wallet,
-    title: "UPI Lite Reward Fraud",
-    detail:
-      "Beware of links promising ₹500 cashback for 'activating' UPI Lite.",
-    time: "5 hours ago",
-  },
-  {
-    icon: Briefcase,
-    title: "Jamtara Style Job Scams",
-    detail:
-      "Part-time 'Work from Home' offers on Telegram are stealing bank credentials.",
-    time: "1 day ago",
-  },
-];
+const iconMap: Record<string, any> = { Zap, Wallet, Briefcase, Phone, TrendingUp };
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
 
 const container = {
   hidden: { opacity: 0 },
@@ -42,10 +30,19 @@ const item = {
 
 const TrendsPage = ({ onBack }: TrendsPageProps) => {
   const [loaded, setLoaded] = useState(false);
+  const [trends, setTrends] = useState<any[]>([]);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 1200);
-    return () => clearTimeout(t);
+    const fetchTrends = async () => {
+      const { data } = await supabase
+        .from("scam_trends")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5) as any;
+      setTrends(data || []);
+      setLoaded(true);
+    };
+    fetchTrends();
   }, []);
 
   return (
@@ -80,8 +77,8 @@ const TrendsPage = ({ onBack }: TrendsPageProps) => {
           initial="hidden"
           animate="show"
         >
-          {trends.map((t, i) => {
-            const Icon = t.icon;
+          {trends.map((t: any, i: number) => {
+            const Icon = iconMap[t.icon_name] || Zap;
             return (
               <motion.div
                 key={i}
@@ -103,7 +100,7 @@ const TrendsPage = ({ onBack }: TrendsPageProps) => {
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed font-medium">
                       {t.detail}
                     </p>
-                    <p className="mt-2 text-[11px] text-muted-foreground/70">{t.time}</p>
+                    <p className="mt-2 text-[11px] text-muted-foreground/70">{timeAgo(t.created_at)}</p>
                   </div>
                 </div>
               </motion.div>
