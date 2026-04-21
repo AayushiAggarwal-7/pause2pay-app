@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      scam_trends: {
+        Row: {
+          created_at: string
+          detail: string
+          icon_name: string
+          id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          detail: string
+          icon_name?: string
+          id?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string
+          icon_name?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      threat_events: {
+        Row: {
+          city: string | null
+          created_at: string
+          id: string
+          message_text: string | null
+          risk_score: number
+          threat_type: string
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          message_text?: string | null
+          risk_score: number
+          threat_type: string
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          message_text?: string | null
+          risk_score?: number
+          threat_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
