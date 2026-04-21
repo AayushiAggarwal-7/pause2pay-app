@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface RiskGaugeProps {
   value: number; // 0-100
@@ -26,10 +26,12 @@ const RiskGauge = ({ value }: RiskGaugeProps) => {
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative rounded-[2rem] p-8 flex items-center justify-center obsidian-glass"
+        className={`relative rounded-[2rem] p-8 flex items-center justify-center obsidian-glass ${value > 70 ? "animate-pulse" : ""}`}
         style={{
           boxShadow:
-            "0 8px 40px -12px hsla(153,17%,49%,0.22), inset 0 1px 0 hsla(0,0%,100%,0.5)",
+            value > 70
+              ? "0 8px 40px -12px hsla(0,84%,60%,0.5), inset 0 1px 0 hsla(0,0%,100%,0.5), 0 0 60px -10px hsla(0,84%,60%,0.35)"
+              : "0 8px 40px -12px hsla(153,17%,49%,0.22), inset 0 1px 0 hsla(0,0%,100%,0.5)",
         }}
       >
         <motion.div

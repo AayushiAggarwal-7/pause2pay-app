@@ -24,6 +24,7 @@ const item = {
 const HomeScreen = () => {
   const [tab, setTab] = useState<Tab>("home");
   const [userName, setUserName] = useState("there");
+  const [lastRisk, setLastRisk] = useState(12);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,7 +35,11 @@ const HomeScreen = () => {
           .select("display_name")
           .eq("id", user.id)
           .single() as any;
-        if (data?.display_name) setUserName(data.display_name);
+        if (data?.display_name) {
+          setUserName(data.display_name.split(" ")[0]);
+        } else {
+          setUserName("Welcome back");
+        }
       }
     };
     fetchProfile();
@@ -43,7 +48,7 @@ const HomeScreen = () => {
   return (
     <AnimatePresence mode="wait">
       {tab === "scanner" ? (
-        <MessageScanner key="scanner" onBack={() => setTab("home")} />
+        <MessageScanner key="scanner" onBack={() => setTab("home")} onResult={(score) => setLastRisk(score)} />
       ) : tab === "mule" ? (
         <MuleCheck key="mule" onBack={() => setTab("home")} />
       ) : tab === "trends" ? (
@@ -57,6 +62,7 @@ const HomeScreen = () => {
           tab={tab}
           setTab={setTab}
           userName={userName}
+          lastRisk={lastRisk}
         />
       )}
     </AnimatePresence>
@@ -70,9 +76,10 @@ interface HomeViewProps {
   tab: Tab;
   setTab: (t: Tab) => void;
   userName: string;
+  lastRisk: number;
 }
 
-const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab, userName }: HomeViewProps) => {
+const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab, userName, lastRisk }: HomeViewProps) => {
   return (
     <motion.main
       className="relative min-h-screen bg-background pb-28"
@@ -105,7 +112,7 @@ const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab, userNa
           variants={item}
           className="mt-12 flex flex-col items-center"
         >
-          <RiskGauge value={12} />
+          <RiskGauge value={lastRisk} />
           <p className="mt-6 text-sm text-muted-foreground text-center max-w-xs">
             You're well protected. Keep scanning suspicious messages before paying.
           </p>

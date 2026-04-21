@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const spring = { type: "spring" as const, stiffness: 90, damping: 14, mass: 0.8 };
 
@@ -8,8 +10,39 @@ interface LoginScreenProps {
 }
 
 const LoginScreen = ({ onLogin }: LoginScreenProps) => {
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [isSignup, setIsSignup] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    if (!email.trim() || !password.trim()) return;
+    setLoading(true);
+    try {
+      if (isSignup) {
+        const { error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { display_name: displayName.trim() || email.split("@")[0] } },
+        });
+        if (error) throw error;
+        toast({ title: "Account created!", description: "You're now signed in." });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+      }
+      onLogin();
+    } catch (e: any) {
+      toast({ title: "Auth error", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -62,20 +95,21 @@ const LoginScreen = ({ onLogin }: LoginScreenProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spring, delay: 0.2 }}
         >
-          <div>
-            <label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              inputMode="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 98765 43210"
-              className="mt-2 w-full h-12 px-4 rounded-2xl bg-card border border-border/70 text-foreground placeholder:text-muted-foreground/60 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/25"
-              style={{ borderWidth: "1px" }}
-            />
-          </div>
+          {isSignup && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+                Display Name
+              </label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+                className="mt-2 w-full h-12 px-4 rounded-2xl bg-card border border-border/70 text-foreground placeholder:text-muted-foreground/60 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/25"
+                style={{ borderWidth: "1px" }}
+              />
+            </div>
+          )}
 
           <div>
             <label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
@@ -90,17 +124,32 @@ const LoginScreen = ({ onLogin }: LoginScreenProps) => {
               style={{ borderWidth: "1px" }}
             />
           </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="mt-2 w-full h-12 px-4 rounded-2xl bg-card border border-border/70 text-foreground placeholder:text-muted-foreground/60 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/25"
+              style={{ borderWidth: "1px" }}
+            />
+          </div>
         </motion.div>
 
         <motion.button
-          onClick={onLogin}
-          className="mt-10 w-full h-14 rounded-full text-primary-foreground font-semibold text-base shadow-[var(--shadow-soft)] active:scale-[0.98] transition-transform"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="mt-10 w-full h-14 rounded-full text-primary-foreground font-semibold text-base shadow-[var(--shadow-soft)] active:scale-[0.98] transition-transform disabled:opacity-60"
           style={{ background: "var(--gradient-sage)" }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spring, delay: 0.3 }}
         >
-          Login
+          {loading ? "Please wait…" : isSignup ? "Sign Up" : "Login"}
         </motion.button>
 
         <motion.p
@@ -109,7 +158,10 @@ const LoginScreen = ({ onLogin }: LoginScreenProps) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          New here? <span className="text-primary font-medium">Create an account</span>
+          {isSignup ? "Already have an account?" : "New here?"}{" "}
+          <button onClick={() => setIsSignup(!isSignup)} className="text-primary font-medium">
+            {isSignup ? "Login" : "Create an account"}
+          </button>
         </motion.p>
       </div>
     </motion.div>
