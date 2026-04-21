@@ -7,13 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 
 interface MessageScannerProps {
   onBack: () => void;
+  onResult?: (score: number) => void;
 }
 
 type Phase = "idle" | "analyzing" | "report" | "warning";
 
 const spring = { type: "spring" as const, stiffness: 90, damping: 14, mass: 0.8 };
 
-const MessageScanner = ({ onBack }: MessageScannerProps) => {
+const MessageScanner = ({ onBack, onResult }: MessageScannerProps) => {
   const [message, setMessage] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [countdown, setCountdown] = useState(5);
@@ -38,6 +39,7 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
       const threat = data.threat_type ?? "Unknown";
       setRiskScore(score);
       setThreatType(threat);
+      onResult?.(score);
 
       // Haptic: short pulse on scan complete
       if (navigator.vibrate) navigator.vibrate(50);
