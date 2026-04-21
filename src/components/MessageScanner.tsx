@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useState as useStateReact } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShieldAlert, Sparkles, AlertTriangle, Ban, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
