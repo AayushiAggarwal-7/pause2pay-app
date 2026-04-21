@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Radio, Zap, Wallet, Briefcase } from "lucide-react";
 
@@ -40,6 +41,13 @@ const item = {
 };
 
 const TrendsPage = ({ onBack }: TrendsPageProps) => {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoaded(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <motion.main
       className="min-h-screen bg-background pb-12"
@@ -63,8 +71,8 @@ const TrendsPage = ({ onBack }: TrendsPageProps) => {
           </span>
         </div>
 
-        <h1 className="mt-6 text-2xl font-semibold text-foreground">Scam Watch</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Latest threats reported in real-time</p>
+        <h1 className="mt-6 text-2xl font-bold tracking-tight text-foreground">Scam Watch</h1>
+        <p className="mt-1 text-sm text-muted-foreground font-medium">Latest threats reported in real-time</p>
 
         <motion.div
           className="mt-8 flex flex-col gap-4"
@@ -78,15 +86,11 @@ const TrendsPage = ({ onBack }: TrendsPageProps) => {
               <motion.div
                 key={i}
                 variants={item}
-                className="rounded-3xl p-5 shadow-[var(--shadow-glass)]"
-                style={{
-                  background:
-                    "linear-gradient(135deg, hsla(0,0%,100%,0.6), hsla(153,25%,92%,0.4))",
-                  backdropFilter: "blur(18px) saturate(150%)",
-                  WebkitBackdropFilter: "blur(18px) saturate(150%)",
-                  border: "1px solid hsla(0,0%,100%,0.65)",
-                }}
+                className="rounded-3xl p-5 shadow-[var(--shadow-glass)] obsidian-glass overflow-hidden relative"
               >
+                {!loaded && (
+                  <div className="absolute inset-0 shimmer-loading rounded-3xl z-10" />
+                )}
                 <div className="flex items-start gap-4">
                   <div
                     className="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center text-primary-foreground shadow-[0_6px_18px_-6px_hsl(var(--primary)/0.55)]"
@@ -95,8 +99,8 @@ const TrendsPage = ({ onBack }: TrendsPageProps) => {
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground leading-snug">{t.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    <p className="font-bold text-foreground leading-snug tracking-tight">{t.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed font-medium">
                       {t.detail}
                     </p>
                     <p className="mt-2 text-[11px] text-muted-foreground/70">{t.time}</p>
