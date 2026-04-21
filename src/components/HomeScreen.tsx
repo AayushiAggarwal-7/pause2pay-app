@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useState as useStateReact, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, ScanSearch, ShieldCheck, Swords, Search, SearchCheck } from "lucide-react";
 import RiskGauge from "@/components/RiskGauge";
 import MessageScanner from "@/components/MessageScanner";
 import MuleCheck from "@/components/MuleCheck";
 import TrendsPage from "@/components/TrendsPage";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "home" | "scanner" | "mule" | "war" | "trends";
 
@@ -22,6 +24,22 @@ const item = {
 
 const HomeScreen = () => {
   const [tab, setTab] = useState<Tab>("home");
+  const [userName, setUserName] = useStateReact("there");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .single() as any;
+        if (data?.display_name) setUserName(data.display_name);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   return (
     <AnimatePresence mode="wait">
@@ -39,6 +57,7 @@ const HomeScreen = () => {
           onOpenTrends={() => setTab("trends")}
           tab={tab}
           setTab={setTab}
+          userName={userName}
         />
       )}
     </AnimatePresence>
@@ -51,9 +70,10 @@ interface HomeViewProps {
   onOpenTrends: () => void;
   tab: Tab;
   setTab: (t: Tab) => void;
+  userName: string;
 }
 
-const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab }: HomeViewProps) => {
+const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab, userName }: HomeViewProps) => {
   return (
     <motion.main
       className="relative min-h-screen bg-background pb-28"
@@ -70,7 +90,7 @@ const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab }: Home
       <div className="relative z-10 px-6 pt-12">
         <motion.header variants={item} className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-foreground">
-            Hi Mala <span className="inline-block">👋</span>
+            Hi {userName} <span className="inline-block">👋</span>
           </h1>
 
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full obsidian-glass">
