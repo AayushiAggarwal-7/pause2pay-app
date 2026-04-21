@@ -1,27 +1,53 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ShieldAlert, Sparkles, AlertTriangle, Ban } from "lucide-react";
+import { ArrowLeft, ShieldAlert, Sparkles, AlertTriangle, Ban, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 interface MessageScannerProps {
   onBack: () => void;
 }
 
-type Phase = "idle" | "analyzing" | "report";
+type Phase = "idle" | "analyzing" | "report" | "warning";
 
 const spring = { type: "spring" as const, stiffness: 90, damping: 14, mass: 0.8 };
 
 const MessageScanner = ({ onBack }: MessageScannerProps) => {
   const [message, setMessage] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
+  const [countdown, setCountdown] = useState(5);
+  const riskScore = 89;
 
   const handleAnalyze = () => {
     if (!message.trim()) return;
     setPhase("analyzing");
-    setTimeout(() => setPhase("report"), 3000);
+    setTimeout(() => {
+      // Haptic: short pulse on scan complete
+      if (navigator.vibrate) navigator.vibrate(50);
+
+      if (riskScore > 70) {
+        // Haptic: long double-pulse for high risk
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        setCountdown(5);
+        setPhase("warning");
+        // Start countdown
+        let c = 5;
+        const interval = setInterval(() => {
+          c -= 1;
+          setCountdown(c);
+          if (c <= 0) clearInterval(interval);
+        }, 1000);
+      } else {
+        setPhase("report");
+      }
+    }, 3000);
+  };
+
+  const handleDismissWarning = () => {
+    setPhase("report");
   };
 
   return (
+    <>
     <motion.main
       className="relative min-h-screen bg-background pb-12"
       initial={{ opacity: 0 }}
@@ -55,8 +81,8 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Paste the suspicious SMS or WhatsApp message here..."
-            disabled={phase === "analyzing"}
-            className="min-h-[180px] rounded-3xl glass-card border-0 p-5 text-sm text-foreground placeholder:text-muted-foreground shadow-[var(--shadow-glass)] resize-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            disabled={phase === "analyzing" || phase === "warning"}
+            className="min-h-[180px] rounded-3xl obsidian-glass border-0 p-5 text-sm text-foreground placeholder:text-muted-foreground shadow-[var(--shadow-glass)] resize-none focus-visible:ring-2 focus-visible:ring-primary/40"
           />
 
           <button
@@ -78,7 +104,7 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={spring}
-              className="mt-8 glass-card rounded-3xl p-6 flex items-center gap-4 shadow-[var(--shadow-glass)]"
+              className="mt-8 obsidian-glass rounded-3xl p-6 flex items-center gap-4 shadow-[var(--shadow-glass)]"
             >
               <span className="relative flex h-3 w-3">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-primary pulse-dot" />
@@ -100,7 +126,7 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8 }}
               transition={spring}
-              className="mt-8 glass-card rounded-3xl p-6 shadow-[var(--shadow-glass)]"
+              className="mt-8 obsidian-glass rounded-3xl p-6 shadow-[var(--shadow-glass)]"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -121,7 +147,7 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
                     89<span className="text-2xl">%</span>
                   </p>
                 </div>
-                <span className="px-3 py-1.5 rounded-full text-xs font-semibold text-destructive-foreground bg-destructive/90">
+                <span className="px-3 py-1.5 rounded-full text-xs font-semibold text-destructive-foreground" style={{ background: "hsl(0 75% 55%)" }}>
                   High Risk
                 </span>
               </div>
@@ -174,6 +200,61 @@ const MessageScanner = ({ onBack }: MessageScannerProps) => {
         </AnimatePresence>
       </div>
     </motion.main>
+
+    {/* Cognitive Pause Modal */}
+    <AnimatePresence>
+      {phase === "warning" && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "hsl(0 0% 5% / 0.75)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}
+          />
+          <motion.div
+            className="relative z-10 w-full max-w-sm rounded-3xl p-8 text-center"
+            style={{
+              background: "hsl(0 0% 10% / 0.9)",
+              border: "1px solid hsl(0 75% 55% / 0.4)",
+              boxShadow: "0 0 60px -10px hsl(0 75% 55% / 0.4)",
+            }}
+            initial={{ scale: 0.85, y: 30 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 120, damping: 16 }}
+          >
+            <div className="text-6xl mb-4">🚨</div>
+            <h2 className="text-2xl font-bold" style={{ color: "hsl(0 75% 65%)" }}>
+              STOP. High Risk Detected.
+            </h2>
+            <p className="mt-3 text-sm" style={{ color: "hsl(0 0% 70%)" }}>
+              This message shows strong indicators of fraud. Take a moment to think before proceeding.
+            </p>
+
+            <button
+              onClick={handleDismissWarning}
+              disabled={countdown > 0}
+              className="mt-8 w-full h-14 rounded-2xl font-semibold text-sm transition-all"
+              style={{
+                background: countdown > 0 ? "hsl(0 0% 20%)" : "hsl(0 75% 55%)",
+                color: countdown > 0 ? "hsl(0 0% 50%)" : "hsl(0 0% 100%)",
+                cursor: countdown > 0 ? "not-allowed" : "pointer",
+              }}
+            >
+              {countdown > 0 ? `Proceed (${countdown}s)` : "I understand, proceed"}
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 

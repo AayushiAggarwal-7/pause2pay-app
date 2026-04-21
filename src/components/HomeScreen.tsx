@@ -73,7 +73,7 @@ const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab }: Home
             Hi Mala <span className="inline-block">👋</span>
           </h1>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full obsidian-glass">
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-primary pulse-dot" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
@@ -95,7 +95,7 @@ const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab }: Home
         <motion.section variants={item} className="mt-6">
           <button
             onClick={onOpenTrends}
-            className="w-full glass-card rounded-3xl p-5 flex items-center gap-4 text-left shadow-[var(--shadow-glass)]"
+            className="w-full obsidian-glass rounded-3xl p-5 flex items-center gap-4 text-left shadow-[var(--shadow-glass)]"
           >
             <div
               className="w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center text-primary-foreground shadow-[0_6px_18px_-6px_hsl(var(--primary)/0.55)]"
@@ -113,7 +113,7 @@ const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab }: Home
         </motion.section>
 
         <motion.section variants={item} className="mt-10 grid grid-cols-2 gap-4">
-          <button onClick={onOpenScanner} className="glass-card rounded-3xl p-5 text-left shadow-[var(--shadow-glass)]">
+          <button onClick={onOpenScanner} className="obsidian-glass rounded-3xl p-5 text-left shadow-[var(--shadow-glass)]">
             <div
               className="w-11 h-11 rounded-2xl flex items-center justify-center text-primary-foreground shadow-[0_6px_18px_-6px_hsl(var(--primary)/0.55)]"
               style={{ background: "var(--gradient-sage)" }}
@@ -126,7 +126,7 @@ const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab }: Home
             </p>
           </button>
 
-          <button onClick={onOpenMule} className="glass-card rounded-3xl p-5 text-left shadow-[var(--shadow-glass)]">
+          <button onClick={onOpenMule} className="obsidian-glass rounded-3xl p-5 text-left shadow-[var(--shadow-glass)]">
             <div
               className="w-11 h-11 rounded-2xl flex items-center justify-center text-primary-foreground shadow-[0_6px_18px_-6px_hsl(var(--primary)/0.55)]"
               style={{ background: "var(--gradient-sage)" }}
@@ -143,7 +143,7 @@ const HomeView = ({ onOpenScanner, onOpenMule, onOpenTrends, tab, setTab }: Home
 
       <motion.nav
         variants={item}
-        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-2 rounded-full glass shadow-[var(--shadow-glass)]"
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-2 rounded-full obsidian-glass shadow-[var(--shadow-glass)]"
       >
         {([
           { icon: Home, label: "Home", key: "home" as Tab },

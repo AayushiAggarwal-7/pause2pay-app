@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RiskGaugeProps {
   value: number; // 0-100
@@ -19,19 +19,15 @@ const RiskGauge = ({ value }: RiskGaugeProps) => {
       : "hsl(0 84% 60%)";
 
   const glowId = "gaugeGlow";
-  const shimId = "shimmer";
+  const shimId = "gaugeShimmer";
   const arcId = "liquidArc";
+  const metalId = "metalShine";
 
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative rounded-[2rem] p-8 flex items-center justify-center"
+        className="relative rounded-[2rem] p-8 flex items-center justify-center obsidian-glass"
         style={{
-          background:
-            "linear-gradient(135deg, hsla(0,0%,100%,0.55), hsla(153,25%,85%,0.35))",
-          backdropFilter: "blur(16px) saturate(150%)",
-          WebkitBackdropFilter: "blur(16px) saturate(150%)",
-          border: "1.5px solid hsla(153,25%,90%,0.6)",
           boxShadow:
             "0 8px 40px -12px hsla(153,17%,49%,0.22), inset 0 1px 0 hsla(0,0%,100%,0.5)",
         }}
@@ -50,10 +46,18 @@ const RiskGauge = ({ value }: RiskGaugeProps) => {
         <div className="relative" style={{ width: size, height: size }}>
           <svg width={size} height={size} className="-rotate-90">
             <defs>
-              <linearGradient id={arcId} x1="0" y1="0" x2="1" y2="1">
+              <linearGradient id={arcId} x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#4ade80" />
-                <stop offset="50%" stopColor="#facc15" />
+                <stop offset="40%" stopColor="#facc15" />
                 <stop offset="100%" stopColor="#ef4444" />
+              </linearGradient>
+
+              <linearGradient id={metalId} x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="hsla(0,0%,100%,0)" />
+                <stop offset="30%" stopColor="hsla(0,0%,100%,0.55)" />
+                <stop offset="50%" stopColor="hsla(0,0%,100%,0.3)" />
+                <stop offset="70%" stopColor="hsla(0,0%,100%,0.55)" />
+                <stop offset="100%" stopColor="hsla(0,0%,100%,0)" />
               </linearGradient>
 
               <linearGradient id={shimId} x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(45)">
@@ -110,7 +114,7 @@ const RiskGauge = ({ value }: RiskGaugeProps) => {
               cx={size / 2}
               cy={size / 2}
               r={radius}
-              stroke={`url(#${shimId})`}
+              stroke={`url(#${metalId})`}
               strokeWidth={stroke - 2}
               strokeLinecap="round"
               fill="none"
@@ -134,7 +138,8 @@ const RiskGauge = ({ value }: RiskGaugeProps) => {
             <motion.span
               className="text-6xl font-extrabold text-foreground"
               style={{
-                textShadow: `0 0 18px ${riskColor.replace(")", " / 0.5)")}, 0 0 40px ${riskColor.replace(")", " / 0.25)")}`,
+                textShadow: `0 0 24px ${riskColor.replace(")", " / 0.6)")}, 0 0 48px ${riskColor.replace(")", " / 0.35)")}, 0 0 72px ${riskColor.replace(")", " / 0.15)")}`,
+                color: riskColor,
               }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

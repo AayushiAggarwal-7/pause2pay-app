@@ -128,4 +128,27 @@
     70% { box-shadow: 0 0 0 10px hsl(var(--primary) / 0); }
     100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
   }
+
+  .obsidian-glass {
+    background: rgba(236, 243, 238, 0.6);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid hsl(153 25% 90% / 0.7);
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .shimmer-loading {
+    background: linear-gradient(
+      90deg,
+      hsl(153 17% 92% / 0.3) 25%,
+      hsl(0 0% 100% / 0.6) 50%,
+      hsl(153 17% 92% / 0.3) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
 }

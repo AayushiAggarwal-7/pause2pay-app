@@ -18,7 +18,11 @@ const MuleCheck = ({ onBack }: MuleCheckProps) => {
   const handleVerify = () => {
     const id = value.trim().toLowerCase();
     if (!id) return;
-    setResult(id === "mala@upi" ? "safe" : "flagged");
+    const isSafe = id === "mala@upi";
+    setResult(isSafe ? "safe" : "flagged");
+    if (navigator.vibrate) {
+      navigator.vibrate(isSafe ? 50 : [200, 100, 200]);
+    }
   };
 
   const handleChange = (v: string) => {
@@ -59,7 +63,8 @@ const MuleCheck = ({ onBack }: MuleCheckProps) => {
           <label className="text-xs uppercase tracking-wider text-muted-foreground">
             UPI ID or Account Number
           </label>
-          <div className="mt-2 glass-card rounded-2xl p-2 pl-4 flex items-center gap-2 shadow-[var(--shadow-glass)]">
+          <div className="mt-2 obsidian-glass rounded-2xl p-2 pl-4 flex items-center gap-2 shadow-[var(--shadow-glass)]">
+
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
             <Input
               value={value}
@@ -88,7 +93,8 @@ const MuleCheck = ({ onBack }: MuleCheckProps) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8 }}
               transition={spring}
-              className="mt-8 glass-card rounded-3xl p-6 shadow-[var(--shadow-glass)] border border-primary/30"
+              className="mt-8 obsidian-glass rounded-3xl p-6 shadow-[var(--shadow-glass)] border border-primary/30"
+
             >
               <div className="flex items-center gap-3">
                 <div
