@@ -127,7 +127,7 @@ const MessageScanner = ({ onBack, onResult }: MessageScannerProps) => {
             style={{ background: "var(--gradient-sage)" }}
           >
             <Sparkles className="w-5 h-5" />
-            {phase === "analyzing" ? "Analyzing..." : "Analyze with Sentinel AI"}
+            {phase === "analyzing" ? "Analyzing..." : "Analyze with Guardian Engine"}
           </button>
         </motion.section>
 
@@ -146,7 +146,7 @@ const MessageScanner = ({ onBack, onResult }: MessageScannerProps) => {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
               </span>
               <div>
-                <p className="font-semibold text-foreground">Sentinel AI is analyzing</p>
+                <p className="font-semibold text-foreground">Guardian Engine is analyzing</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Checking for scam patterns, urgency cues & malicious links…
                 </p>
@@ -169,7 +169,7 @@ const MessageScanner = ({ onBack, onResult }: MessageScannerProps) => {
                   <h2 className="font-semibold text-foreground">Risk Analysis Report</h2>
                 </div>
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Sentinel AI
+                  Guardian Engine
                 </span>
               </div>
 
