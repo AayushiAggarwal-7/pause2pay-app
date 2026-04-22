@@ -25,12 +25,21 @@ const MessageScanner = ({ onBack, onResult }: MessageScannerProps) => {
   const INDIAN_CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Lucknow", "Chandigarh", "Kochi", "Indore", "Bhopal", "Nagpur"];
 
   const handleAnalyze = async () => {
-    if (!message.trim()) return;
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) return;
     setPhase("analyzing");
 
     try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) throw sessionError;
+      if (!session?.user) throw new Error("Please sign in to analyze and save scans.");
+
       const { data, error } = await supabase.functions.invoke("analyze-message", {
-        body: { message: message.trim() },
+        body: { message: trimmedMessage },
       });
 
       if (error) throw error;
@@ -45,15 +54,19 @@ const MessageScanner = ({ onBack, onResult }: MessageScannerProps) => {
       if (navigator.vibrate) navigator.vibrate(50);
 
       // Insert into threat_events
-      const { data: { user } } = await supabase.auth.getUser();
       const city = INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)];
-      await supabase.from("threat_events").insert({
-        user_id: user?.id,
+      const { error: insertError } = await supabase.from("threat_events").insert({
+        user_id: session.user.id,
         risk_score: score,
         threat_type: threat,
         city,
-        message_text: message.trim(),
-      } as any);
+        message_text: trimmedMessage,
+      });
+
+      if (insertError) {
+        console.error("threat_events insert failed:", insertError);
+        throw new Error(insertError.message || "Failed to save this scan.");
+      }
 
       if (score > 70) {
         // Haptic: long double-pulse for high risk
@@ -103,7 +116,7 @@ const MessageScanner = ({ onBack, onResult }: MessageScannerProps) => {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl font-semibold text-foreground">AI Message Scanner</h1>
+          <h1 className="text-xl font-semibold text-foreground">Guardian Engine Scanner</h1>
         </header>
 
         <motion.section
